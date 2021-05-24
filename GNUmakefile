@@ -1,6 +1,6 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 
-NAME=serverless-wrapper
+NAME=wrapper
 BINARY=terraform-provider-${NAME}
 VERSION=0.1
 OS_ARCH=darwin_amd64
@@ -14,8 +14,8 @@ release:
 	GOOS=darwin GOARCH=amd64 go build -o ./bin/${BINARY}_${VERSION}_darwin_amd64
 
 install: build
-	mkdir -p ~/.terraform.d/plugins/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${NAME}/${VERSION}/${OS_ARCH}
+	mkdir -p ~/.terraform.d/plugins/${OS_ARCH}
+	mv ${BINARY} ~/.terraform.d/plugins/${OS_ARCH}
 
 test: 
 	go test -i $(TEST) || exit 1                                                   

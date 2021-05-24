@@ -7,7 +7,9 @@ import (
 func Provider() *schema.Provider {
   return &schema.Provider{
     ResourcesMap: map[string]*schema.Resource{
-		"wrapper_resource": resourceWrapper(),
+		"wrapper_layer": resourceWrapper(),
+		"wrapper_function": resourceWrapper(),
+		"wrapper_docker": resourceWrapper(),
 	},
   }
 }

@@ -1,5 +1,14 @@
-provider "serverless-wrapper" {}
+terraform {
+  required_providers {
+    wrapper = {}
+  }
+}
 
-resource "wrapper_resource" "foo" {
-  runtime = "foo"
+provider "wrapper" {}
+
+resource "wrapper_layer" "foo" {
+  runtime = "python3.8"
+  build_method = "pip3"
+  requirements_path = "./src/"
+  artifact_name = "foo"
 }
