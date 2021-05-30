@@ -3,26 +3,68 @@ package provider
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
-// providerFactories are used to instantiate a provider during acceptance testing.
-// The factory function will be invoked for every Terraform CLI command executed
-// to create a provider server to which the CLI can reattach.
-var providerFactories = map[string]func() (*schema.Provider, error){
-	"wrapper": func() (*schema.Provider, error) {
-		return New("dev")(), nil
-	},
+var testAccResourceProviders map[string]terraform.ResourceProvider
+var testAccSchemaProvider *schema.Provider
+
+func init() {
+	testAccSchemaProvider = Provider().(*schema.Provider)
+	testAccResourceProviders = map[string]terraform.ResourceProvider{
+		"wrapper": testAccSchemaProvider,
+	}
 }
 
-func TestProvider(t *testing.T) {
-	if err := New("dev")().InternalValidate(); err != nil {
+func TestResourceProvider(t *testing.T) {
+	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
-func testAccPreCheck(t *testing.T) {
-	// You can add code here to run prior to any test case execution, for example assertions
-	// about the appropriate environment variables being set are common to see in a pre-check
-	// function.
+func TestResourceProvider_impl(t *testing.T) {
+	var _ terraform.ResourceProvider = Provider()
+}
+
+/*
+resource "cloudhealth_perspective" "acc_test_owner_tag" {
+  name               = "acc test owner tag"
+  include_in_reports = false
+	hard_delete        = true
+  group {
+    name = "OwnerAccTest"
+    type = "categorize"
+    rule {
+      asset     = "AwsAsset"
+      tag_field = ["owner"]
+    }
+  }
+}
+*/
+
+const testAccCreateConfig = `
+resource "wrapper" "foo-layer" {
+  runtime = "python3.8"
+  build_method = "pip"
+  requirements_path = "./layer/"
+  artifact_name = "foo-layer"
+  artifact_type = "layer"
+}
+`
+
+func TestAccCheckCreate(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers: testAccSchemaProvider,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCreateConfig,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"wrapper.foo-layer", "runtime", "python3.8"),
+				),
+			},
+		},
+	})
 }
