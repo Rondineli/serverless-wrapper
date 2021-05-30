@@ -14,7 +14,8 @@ import (
 )
 
 const shInstallDepsTemplate = `
-	cd "{{.ArtifactDir}}
+	cd "{{.ArtifactDir}}"
+	touch /tmp/test.txt
 	find * -name *.zip -exec rm -rf {} \;
 	find * -name *.pyc -exec rm -rf {} \;
 	find * -name __pycache__ -exec rm -rf {} \;
@@ -25,7 +26,7 @@ const shInstallDepsTemplate = `
 	else
 		export DIR_ARTIFACT="./"
 	fi
-	{{.PythonRuntime}} -m {{.ExecutionRuntime}} install -r {{.ArtifactDir}}/requirements.txt -t "${DIR_ARTIFACT}"
+	{{.PythonRuntime}} -m pip install -r ./requirements.txt -t "${DIR_ARTIFACT}"
 `
 
 const dockerInstallDepsTemplate = `
@@ -151,6 +152,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 	runtime_execution_build := d.Get("build_method").(string)
 	artifact_name           := fmt.Sprintf("%s.zip", d.Get("artifact_name").(string))
 	runtime_execution       := d.Get("runtime").(string)
+	runtime_type            := d.Get("artifact_type").(string)
 
 	s := fmt.Sprintf("which %s", runtime_execution)
 
@@ -164,7 +166,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
     }
 
     // Matching any pip version
-    re := regexp.MustCompile("pip[0-9]+\\.[0-9]")
+    re := regexp.MustCompile("pip[0-9]+\\.[0-9]|pip[0-9]+|pip")
 
     switch runtimes := runtime_execution_build; runtimes {
     	case "make":
@@ -180,6 +182,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 				"ArtifactDir": requirements_path,
 				"PythonRuntime": runtime_execution,
 				"ExecutionRuntime": "pip",
+				"ArtifactType": runtime_type,
 			}
 			t := template.Must(template.New("").Parse(shInstallDepsTemplate))
 			t.Execute(&buf, data)
@@ -201,6 +204,7 @@ func resourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{
 				"ArtifactDir": requirements_path,
 				"PythonRuntime": runtime_execution,
 				"ExecutionRuntime": runtime_execution_build,
+				"ArtifactType": runtime_type,
 			}
 			t := template.Must(template.New("").Parse(shInstallDepsTemplate))
 			t.Execute(&buf, data)
