@@ -75,6 +75,7 @@ func resourceWrapper() *schema.Resource {
 							found = true
 							break
 						}
+					}
 
 				   	if !found {
 				    	errs = append(errs, fmt.Errorf("%q Must be one of: %v", a, options))
@@ -89,8 +90,8 @@ func resourceWrapper() *schema.Resource {
 				Required:    true,
 			},
 			"artifact_type": {
-				Description: "If your artifact is a layer or a function"
-				Type:        schema.TypeString
+				Description: "If your artifact is a layer or a function",
+				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					a := val.(string)
@@ -102,26 +103,26 @@ func resourceWrapper() *schema.Resource {
 							found = true
 							break
 						}
+					}
 
 				   	if !found {
 				    	errs = append(errs, fmt.Errorf("%q Must be one of: %v", a, options))
 				   	}
 				   	return
 				},
-			}
+			},
 			"artifact_name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "your requirements, Makefile path",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-				   a := val.(string)
-
-				   fileExtension := path.Ext(a)
-				   if fileExtension != "" {
+				   	a := val.(string)
+				   	fileExtension := path.Ext(a)
+				   	if fileExtension != "" {
 				   		errs = append(errs, fmt.Errorf("%q Must not contain extension, only the file name", a))
-				   }
-				   return
+				   	}
+				   	return
 				},
 			},
 			"sha1": {
