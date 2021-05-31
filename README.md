@@ -50,7 +50,6 @@ resource "wrapper" "foo-layer" {
 }
 
 // Instaling a layer ie: `./test_tf/src-function/`
-resource "wrapper" "foo-layer" {
 resource "wrapper" "foo-function" {
   runtime = "python3.8"
   build_method = "pip"
